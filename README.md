@@ -2,9 +2,9 @@
 
 NestJS_REST_API" is a robust backend framework leveraging TypeScript for building efficient and scalable RESTful APIs
 
-## RESOURSE 
+## Resourse
 
-FreeCodeCamp- Create a REST API
+FreeCodeCamp - Create a REST API
 
 
 ## Installation
