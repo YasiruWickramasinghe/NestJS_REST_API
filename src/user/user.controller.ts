@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, UseGuards } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { GetUser } from 'src/auth/decorator';
 import { JwtGuard } from 'src/auth/guard';
@@ -16,7 +16,7 @@ export class UserController {
       return user;
     }
 
-    @Patch()
+    @Patch(':id')
     editUser(
       @GetUser('id') userId: number,
       @Body() dto: EditUserDto,
