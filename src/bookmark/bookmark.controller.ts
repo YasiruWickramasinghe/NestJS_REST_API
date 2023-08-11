@@ -15,6 +15,8 @@ import { JwtGuard } from 'src/auth/guard';
 import { BookmarkService } from './bookmark.service';
 import { GetUser } from 'src/auth/decorator';
 import { CreateBookmarkDto, EditBookmarkDto } from './dto';
+import { RolesGuard } from 'src/user/guard';
+import { Roles } from 'src/user/decorator';
 
 @UseGuards(JwtGuard)
 @Controller('bookmarks')
@@ -58,6 +60,8 @@ export class BookmarkController {
         );
     }
 
+    @UseGuards(RolesGuard)
+    @Roles('admin')
     @Patch(':id')
     editBookmarkById(
         @GetUser('id') userId: number,
@@ -71,6 +75,8 @@ export class BookmarkController {
         );
     }
 
+    @UseGuards(RolesGuard)
+    @Roles('admin')
     @HttpCode(HttpStatus.NO_CONTENT)
     @Delete(':id')
     deleteBookmarkById(

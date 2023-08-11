@@ -12,7 +12,7 @@ export class AuthService {
         private prisma: PrismaService,
         private jwt: JwtService,
         private config: ConfigService,
-        ) { }
+    ) { }
 
     async signup(dto: SignupDto) {
 
@@ -32,7 +32,7 @@ export class AuthService {
             });
 
             //return token
-            return this.signToken(user.id, user.email);
+            return this.signToken(user.id, user.email, user.userRole);
         } catch (error) {
             if (
                 error instanceof
@@ -77,29 +77,34 @@ export class AuthService {
             );
 
         //return token    
-        return this.signToken(user.id, user.email);    
+        return this.signToken(user.id, user.email, user.userRole);
     }
 
+    // In AuthService
     async signToken(
         userId: number,
         email: string,
-      ): Promise<{ access_token: string }> {
+        role: string,
+    ): Promise<{ access_token: string }> {
         const payload = {
-          sub: userId,
-          email,
+            sub: userId,
+            email,
+            roles: [role],
         };
         const secret = this.config.get('JWT_SECRET');
-    
+
         const token = await this.jwt.signAsync(
-          payload,
-          {
-            expiresIn: '15m',
-            secret: secret,
-          },
+            payload,
+            {
+                expiresIn: '15m',
+                secret: secret,
+            },
         );
-    
+
         return {
-          access_token: token,
+            access_token: token,
         };
-      }
+    }
+
+
 }
