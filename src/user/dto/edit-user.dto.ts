@@ -1,5 +1,6 @@
 import {
   IsEmail,
+  IsIn,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -13,6 +14,11 @@ export class EditUserDto {
   @IsString()
   @IsNotEmpty()
   password: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsIn(['user','admin'])
+  userRole: string = 'user';
 
   @IsString()
   @IsOptional()
