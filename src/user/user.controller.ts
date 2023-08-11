@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, UseGuards, Res, HttpStatus } from '@nestjs/common';
+import { Response } from 'express';
 import { User } from '@prisma/client';
 import { GetUser } from 'src/auth/decorator';
 import { JwtGuard } from 'src/auth/guard';
@@ -16,21 +17,46 @@ export class UserController {
   @UseGuards(RolesGuard)
   @Roles('admin')
   @Get()
-  getAllUser() {
-    return this.userService.getAllUsers();
+  async getAllUser(@Res() res: Response) {
+    try {
+      const users = await this.userService.getAllUsers();
+      return res.status(HttpStatus.OK).json({
+        message: 'Successfully retrieved users',
+        users: users,
+      });
+    } catch (error) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'An error occurred' });
+    }
   }
 
   @Get('me')
-  getMe(@GetUser() user: User) {
-    return user;
+  async getMe(@GetUser() user: User, @Res() res: Response) {
+    try {
+      const userData = await this.userService.getUserById(user.id);
+      return res.status(HttpStatus.OK).json({
+        message: 'User data retrieved successfully',
+        user: userData,
+      });
+    } catch (error) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'An error occurred' });
+    }
   }
 
   @Patch(':id')
-  editUser(
-    @GetUser() user: User,
+  async editUser(
+    @GetUser() loggedInUser: User,
     @Param('id', ParseIntPipe) userId: number,
     @Body() dto: EditUserDto,
+    @Res() res: Response
   ) {
-    return this.userService.editUser(user, userId, dto);
+    try {
+      const editedUser = await this.userService.editUser(loggedInUser, userId, dto);
+      return res.status(HttpStatus.OK).json({
+        message: 'User edited successfully',
+        data: editedUser,
+      });
+    } catch (error) {
+      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'An error occurred' });
+    }
   }
 }

@@ -22,8 +22,31 @@ export class UserService {
     });
   }
 
+  async getUserById(userId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        id: true,
+        createdAt: true,
+        updatedAt: true,
+        email: true,
+        userRole: true,
+        firstName: true,
+        lastName: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
+
   async editUser(
-    loggedInUser: User, // Correctly typed user object
+    loggedInUser: User,
     userId: number,
     dto: EditUserDto,
   ) {

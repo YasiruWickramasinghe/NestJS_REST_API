@@ -10,7 +10,9 @@ import {
     Patch,
     Post,
     UseGuards,
+    Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { JwtGuard } from 'src/auth/guard';
 import { BookmarkService } from './bookmark.service';
 import { GetUser } from 'src/auth/decorator';
@@ -22,70 +24,87 @@ import { Roles } from 'src/user/decorator';
 @Controller('bookmarks')
 export class BookmarkController {
 
-    constructor(
-        private bookmarkService: BookmarkService,
-    ) { }
+    constructor(private bookmarkService: BookmarkService) { }
 
     @Get()
-    getAllBookmarks() {
-        return this.bookmarkService.getAllBookmarks();
+    async getAllBookmarks(@Res() res: Response) {
+        try {
+            const bookmarks = await this.bookmarkService.getAllBookmarks();
+            return res.status(HttpStatus.OK).json({ message: 'Successfully retrieved bookmarks', bookmarks });
+        } catch (error) {
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'An error occurred' });
+        }
     }
 
     @Get('user')
-    getBookmarksByUserId(@GetUser('id') userId: number) {
-        return this.bookmarkService.getBookmarksByUserId(
-            userId,
-        );
+    async getBookmarksByUserId(@GetUser('id') userId: number, @Res() res: Response) {
+        try {
+            const bookmarks = await this.bookmarkService.getBookmarksByUserId(userId);
+            return res.status(HttpStatus.OK).json({ message: 'Successfully retrieved user bookmarks', bookmarks });
+        } catch (error) {
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'An error occurred' });
+        }
     }
 
     @Get(':id')
-    getBookmarkByBookId(
+    async getBookmarkByBookId(
         @GetUser('id') userId: number,
         @Param('id', ParseIntPipe) bookmarkId: number,
+        @Res() res: Response
     ) {
-        return this.bookmarkService.getBookmarkByBookId(
-            userId,
-            bookmarkId,
-        );
+        try {
+            const bookmark = await this.bookmarkService.getBookmarkByBookId(userId, bookmarkId);
+            return res.status(HttpStatus.OK).json({ message: 'Successfully retrieved bookmark', bookmark });
+        } catch (error) {
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'An error occurred' });
+        }
     }
 
     @Post()
-    createBookmark(
+    async createBookmark(
         @GetUser('id') userId: number,
         @Body() dto: CreateBookmarkDto,
+        @Res() res: Response
     ) {
-        return this.bookmarkService.createBookmark(
-            userId,
-            dto,
-        );
+        try {
+            const bookmark = await this.bookmarkService.createBookmark(userId, dto);
+            return res.status(HttpStatus.CREATED).json({ message: 'Bookmark created successfully', bookmark });
+        } catch (error) {
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'An error occurred' });
+        }
     }
 
     @UseGuards(RolesGuard)
     @Roles('admin')
     @Patch(':id')
-    editBookmarkById(
+    async editBookmarkById(
         @GetUser('id') userId: number,
         @Param('id', ParseIntPipe) bookmarkId: number,
         @Body() dto: EditBookmarkDto,
+        @Res() res: Response
     ) {
-        return this.bookmarkService.editBookmarkById(
-            userId,
-            bookmarkId,
-            dto,
-        );
+        try {
+            const editedBookmark = await this.bookmarkService.editBookmarkById(userId, bookmarkId, dto);
+            return res.status(HttpStatus.OK).json({ message: 'Bookmark edited successfully', bookmark: editedBookmark });
+        } catch (error) {
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'An error occurred' });
+        }
     }
 
     @UseGuards(RolesGuard)
     @Roles('admin')
     @HttpCode(HttpStatus.NO_CONTENT)
     @Delete(':id')
-    deleteBookmarkById(
+    async deleteBookmarkById(
         @GetUser('id') userId: number,
         @Param('id', ParseIntPipe) bookmarkId: number,
+        @Res() res: Response
     ) {
-        return this.bookmarkService.deleteBookmarkById(
-            userId,
-            bookmarkId,
-        );
+        try {
+            await this.bookmarkService.deleteBookmarkById(userId, bookmarkId);
+            return res.status(HttpStatus.NO_CONTENT).json({ message: 'Bookmark deleted successfully' });
+        } catch (error) {
+            return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'An error occurred' });
+        }
     }
 }
